@@ -8,6 +8,12 @@ namespace vadersb.utils
 	{
 		public static readonly Vector2 ZeroAngleVector = new Vector2(1.0f, 0.0f);
 
+
+		public static Vector3 ToVector3(this Vector2 src)
+		{
+			return new Vector3(src.x, src.y, 0.0f);
+		}
+
 		///////
 		//setup
 		///////
@@ -209,7 +215,43 @@ namespace vadersb.utils
 			return result;
 		}
 		
-		
+		//======
+		//paths length
+		//======
+
+
+		public static float GetPathLength_CubicInterpolation(Vector2 p1, Vector2 p2, Vector2 p3, Vector2 p4, int stepsCount = 32)
+		{
+			Debug.Assert(stepsCount > 0);
+
+			if (stepsCount < 1)
+			{
+				return 0.01f;
+			}
+
+			float curFactor = 0.0f;
+			float curStep = 1.0f / ((float)stepsCount);
+
+			int i;
+
+			float result = 0.0f;
+
+			Vector2 curPoint = Interpolation.Cubic(p1, p2, p3, p4, curFactor);
+
+			for (i = 0; i < stepsCount; i++)
+			{
+				curFactor += curStep;
+
+				Vector2 nextPoint = Interpolation.Cubic(p1, p2, p3, p4, curFactor + curStep);
+
+				result += curPoint.GetDistanceTo(nextPoint);
+
+				curPoint = nextPoint;
+			}
+
+			return result;
+		}
+
 		//======
 		//random
 		//======
@@ -236,9 +278,16 @@ namespace vadersb.utils
 		{
 			return Interpolation.Linear(segmentFrom, segmentTo, MathHelpers.Random_Factor());
 		}
-		
-		
-		
+
+
+		public static Vector2 Random_Deviation(Vector2 deviation, Vector2 center = default)
+		{
+			Vector2 result = center;
+			result.x += MathHelpers.Random_Float(-deviation.x, deviation.x);
+			result.y += MathHelpers.Random_Float(-deviation.y, deviation.y);
+			return result;
+		}
+
 	}
 
 	public static class VectorDynamics
@@ -278,5 +327,20 @@ namespace vadersb.utils
 		{
 			target += velocity * timeDelta;
 		}
+
+
+		public static float CalculateCollisionVelocity(Vector2 velocityA, Vector2 velocityB, Vector2 normalFromA)
+		{
+			float result = 0.0f;
+
+			//a contribution
+			result += Vector2.Dot(velocityA, normalFromA);
+
+			//b contribution
+			result += Vector2.Dot(velocityB, -normalFromA);
+
+			return result;
+		}
+
 	}
 }

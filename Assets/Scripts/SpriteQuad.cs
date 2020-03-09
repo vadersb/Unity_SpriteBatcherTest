@@ -31,8 +31,13 @@ namespace vadersb.utils.unity
 		//[0;0]   [1;0]
 		public readonly Vector2[] m_Vertices_Original;
 		public readonly Vector2[] m_Vertices;
-		public readonly Vector2[] m_UVs_Original;
-		public readonly Vector2[] m_UVs;
+		public readonly Vector2[] m_UV1_Original;
+		public readonly Vector2[] m_UV1;
+
+		public readonly Vector2[] m_UV2;
+		public readonly Vector2[] m_UV3;
+		public readonly Vector2[] m_UV4;
+
 		public readonly Color[] m_Colors;
 		public readonly ushort[] m_Triangles;
 
@@ -46,11 +51,22 @@ namespace vadersb.utils.unity
 		{
 			m_Vertices_Original = new Vector2[VerticesCount];
 			m_Vertices = new Vector2[VerticesCount];
-			m_UVs_Original = new Vector2[VerticesCount];
-			m_UVs = new Vector2[VerticesCount];
+			m_UV1_Original = new Vector2[VerticesCount];
+			m_UV1 = new Vector2[VerticesCount];
+			m_UV2 = new Vector2[VerticesCount];
+			m_UV3 = new Vector2[VerticesCount];
+			m_UV4 = new Vector2[VerticesCount];
 			m_Colors = new Color[VerticesCount];
 			m_Triangles = new ushort[IndicesCount];
 			m_Width = m_Height = 0;
+
+			//triangles
+			m_Triangles[0] = 0;
+			m_Triangles[1] = 1;
+			m_Triangles[2] = 2;
+			m_Triangles[3] = 2;
+			m_Triangles[4] = 1;
+			m_Triangles[5] = 3;
 		}
 
 
@@ -66,12 +82,21 @@ namespace vadersb.utils.unity
 			Vertices_Reset();
 
 			//uvs
-			m_UVs_Original[Index_TopLeft] = new Vector2(0.0f, 1.0f);
-			m_UVs_Original[Index_TopRight] = new Vector2(1.0f, 1.0f);
-			m_UVs_Original[Index_BottomLeft] = new Vector2(0.0f, 0.0f);
-			m_UVs_Original[Index_BottomRight] = new Vector2(1.0f, 0.0f);
+			m_UV1_Original[Index_TopLeft] = new Vector2(0.0f, 1.0f);
+			m_UV1_Original[Index_TopRight] = new Vector2(1.0f, 1.0f);
+			m_UV1_Original[Index_BottomLeft] = new Vector2(0.0f, 0.0f);
+			m_UV1_Original[Index_BottomRight] = new Vector2(1.0f, 0.0f);
 
-			UVs_Reset();
+			UV1_Reset();
+
+			//uv2
+			UV2_Reset();
+
+			//uv3
+			UV3_Reset();
+
+			//uv4
+			UV4_Reset();
 
 			//colors
 			Colors_Reset();
@@ -80,9 +105,9 @@ namespace vadersb.utils.unity
 			m_Triangles[0] = 0;
 			m_Triangles[1] = 1;
 			m_Triangles[2] = 2;
-			m_Triangles[4] = 2;
-			m_Triangles[5] = 1;
-			m_Triangles[6] = 3;
+			m_Triangles[3] = 2;
+			m_Triangles[4] = 1;
+			m_Triangles[5] = 3;
 		}
 
 		//------------------------------------------------------------
@@ -212,38 +237,167 @@ namespace vadersb.utils.unity
 
 		//------------------------------------------------------------
 		//UVs
-		public void UVs_Reset()
+		public void UV1_Reset()
 		{
 			for (int i = 0; i < VerticesCount; i++)
 			{
-				m_UVs[i] = m_UVs_Original[i];
+				m_UV1[i] = m_UV1_Original[i];
 			}
 		}
 
-		public void UVs_Move(Vector2 delta)
+		public void UV1_Move(Vector2 delta)
 		{
 			for (int i = 0; i < VerticesCount; i++)
 			{
-				m_UVs[i] += delta;
+				m_UV1[i] += delta;
 			}
 		}
 
-		public void UVs_MoveX(float delta)
+		public void UV1_MoveX(float delta)
 		{
 			for (int i = 0; i < VerticesCount; i++)
 			{
-				m_UVs[i].x += delta;
+				m_UV1[i].x += delta;
 			}
 		}
 
-		public void UVs_MoveY(float delta)
+		public void UV1_MoveY(float delta)
 		{
 			for (int i = 0; i < VerticesCount; i++)
 			{
-				m_UVs[i].y += delta;
+				m_UV1[i].y += delta;
 			}
 		}
 
+
+		public void UV1_SetUniform(Vector2 value)
+		{
+			for (int i = 0; i < VerticesCount; i++)
+			{
+				m_UV1[i] = value;
+			}
+		}
+
+		public void UV1_SetFromAnotherOriginal(SpriteQuad anotherQuad)
+		{
+			Debug.Assert(anotherQuad != null);
+
+			m_UV1[Index_TopLeft] = anotherQuad.m_UV1_Original[Index_TopLeft];
+			m_UV1[Index_TopRight] = anotherQuad.m_UV1_Original[Index_TopRight];
+			m_UV1[Index_BottomLeft] = anotherQuad.m_UV1_Original[Index_BottomLeft];
+			m_UV1[Index_BottomRight] = anotherQuad.m_UV1_Original[Index_BottomRight];
+		}
+
+		//------------------------------------------------------------
+		//UV2
+		public void UV2_Reset()
+		{
+			m_UV2[Index_TopLeft] = new Vector2(0.0f, 1.0f);
+			m_UV2[Index_TopRight] = new Vector2(1.0f, 1.0f);
+			m_UV2[Index_BottomLeft] = new Vector2(0.0f, 0.0f);
+			m_UV2[Index_BottomRight] = new Vector2(1.0f, 0.0f);
+		}
+
+		public void UV2_SetFromOriginal()
+		{
+			m_UV2[Index_TopLeft] = m_UV1_Original[Index_TopLeft];
+			m_UV2[Index_TopRight] = m_UV1_Original[Index_TopRight];
+			m_UV2[Index_BottomLeft] = m_UV1_Original[Index_BottomLeft];
+			m_UV2[Index_BottomRight] = m_UV1_Original[Index_BottomRight];
+		}
+
+		public void UV2_SetFromAnotherOriginal(SpriteQuad anotherQuad)
+		{
+			Debug.Assert(anotherQuad != null);
+
+			m_UV2[Index_TopLeft] = anotherQuad.m_UV1_Original[Index_TopLeft];
+			m_UV2[Index_TopRight] = anotherQuad.m_UV1_Original[Index_TopRight];
+			m_UV2[Index_BottomLeft] = anotherQuad.m_UV1_Original[Index_BottomLeft];
+			m_UV2[Index_BottomRight] = anotherQuad.m_UV1_Original[Index_BottomRight];
+		}
+
+		public void UV2_SetUniform(Vector2 value)
+		{
+			for (int i = 0; i < VerticesCount; i++)
+			{
+				m_UV2[i] = value;
+			}
+		}
+
+		//------------------------------------------------------------
+		//UV3
+		public void UV3_Reset()
+		{
+			m_UV3[Index_TopLeft] = new Vector2(0.0f, 1.0f);
+			m_UV3[Index_TopRight] = new Vector2(1.0f, 1.0f);
+			m_UV3[Index_BottomLeft] = new Vector2(0.0f, 0.0f);
+			m_UV3[Index_BottomRight] = new Vector2(1.0f, 0.0f);
+		}
+
+		public void UV3_SetFromOriginal()
+		{
+			m_UV3[Index_TopLeft] = m_UV1_Original[Index_TopLeft];
+			m_UV3[Index_TopRight] = m_UV1_Original[Index_TopRight];
+			m_UV3[Index_BottomLeft] = m_UV1_Original[Index_BottomLeft];
+			m_UV3[Index_BottomRight] = m_UV1_Original[Index_BottomRight];
+		}
+
+		public void UV3_SetFromAnotherOriginal(SpriteQuad anotherQuad)
+		{
+			Debug.Assert(anotherQuad != null);
+
+			m_UV3[Index_TopLeft] = anotherQuad.m_UV1_Original[Index_TopLeft];
+			m_UV3[Index_TopRight] = anotherQuad.m_UV1_Original[Index_TopRight];
+			m_UV3[Index_BottomLeft] = anotherQuad.m_UV1_Original[Index_BottomLeft];
+			m_UV3[Index_BottomRight] = anotherQuad.m_UV1_Original[Index_BottomRight];
+		}
+		
+		public void UV3_SetUniform(Vector2 value)
+		{
+			for (int i = 0; i < VerticesCount; i++)
+			{
+				m_UV3[i] = value;
+			}
+		}
+
+		//------------------------------------------------------------
+		//UV4
+		public void UV4_Reset()
+		{
+			m_UV4[Index_TopLeft] = new Vector2(0.0f, 1.0f);
+			m_UV4[Index_TopRight] = new Vector2(1.0f, 1.0f);
+			m_UV4[Index_BottomLeft] = new Vector2(0.0f, 0.0f);
+			m_UV4[Index_BottomRight] = new Vector2(1.0f, 0.0f);
+		}
+
+		public void UV4_SetFromOriginal()
+		{
+			m_UV4[Index_TopLeft] = m_UV1_Original[Index_TopLeft];
+			m_UV4[Index_TopRight] = m_UV1_Original[Index_TopRight];
+			m_UV4[Index_BottomLeft] = m_UV1_Original[Index_BottomLeft];
+			m_UV4[Index_BottomRight] = m_UV1_Original[Index_BottomRight];
+		}
+
+		public void UV4_SetFromAnotherOriginal(SpriteQuad anotherQuad)
+		{
+			Debug.Assert(anotherQuad != null);
+
+			m_UV4[Index_TopLeft] = anotherQuad.m_UV1_Original[Index_TopLeft];
+			m_UV4[Index_TopRight] = anotherQuad.m_UV1_Original[Index_TopRight];
+			m_UV4[Index_BottomLeft] = anotherQuad.m_UV1_Original[Index_BottomLeft];
+			m_UV4[Index_BottomRight] = anotherQuad.m_UV1_Original[Index_BottomRight];
+		}
+		
+		public void UV4_SetUniform(Vector2 value)
+		{
+			for (int i = 0; i < VerticesCount; i++)
+			{
+				m_UV4[i] = value;
+			}
+		}
+
+		//------------------------------------------------------------
+		//Colors
 		public void Colors_Reset()
 		{
 			for (int i = 0; i < VerticesCount; i++)
@@ -260,6 +414,23 @@ namespace vadersb.utils.unity
 			}
 		}
 
+		public void Colors_SetAlpha(float alpha)
+		{
+			for (int i = 0; i < VerticesCount; i++)
+			{
+				m_Colors[i].a = alpha;
+			}
+		}
+
+
+		public void Colors_SetAlphaFromTo(float fromAlpha, float toAlpha)
+		{
+			m_Colors[Index_BottomLeft].a = fromAlpha;
+			m_Colors[Index_BottomRight].a = fromAlpha;
+			m_Colors[Index_TopLeft].a = toAlpha;
+			m_Colors[Index_TopRight].a = toAlpha;
+		}
+
 		//------------------------------------------------------------
 		//Setup
 		public void SetupFromSprite(Sprite sprite)
@@ -273,7 +444,7 @@ namespace vadersb.utils.unity
 
 			if (sprite.packingMode != SpritePackingMode.Rectangle)
 			{
-				Debug.LogError("Unsupported sprite packing mode: " + sprite.packingMode);
+				Debug.LogError("Unsupported sprite packing mode: " + sprite.packingMode + " in sprite: " + sprite.name);
 				Reset();
 				return;
 			}
@@ -294,12 +465,15 @@ namespace vadersb.utils.unity
 			for (int i = 0; i < VerticesCount; i++)
 			{
 				m_Vertices_Original[i] = spriteVertices[i];
-				m_UVs_Original[i] = spriteUVs[i];
+				m_UV1_Original[i] = spriteUVs[i];
 			}
 
 			Recalculate_WidthHeight();
 			Vertices_Reset();
-			UVs_Reset();
+			UV1_Reset();
+			UV2_Reset();
+			UV3_Reset();
+			UV4_Reset();
 
 			//-----
 			//triangles
@@ -324,13 +498,27 @@ namespace vadersb.utils.unity
 			Colors_Reset();
 		}
 
+		public void SetupFromSpriteBatcher(SpriteBatcher spriteBatcher, string spriteName)
+		{
+			var curSprite = spriteBatcher.GetSprite(spriteName);
+
+			if (curSprite != null)
+			{
+				SetupFromSprite(curSprite);
+			}
+			else
+			{
+				Debug.LogError("Failed to find sprite " + spriteName + " in SpriteBatcher!");
+			}
+		}
+
 
 		//------------------------------------------------------------
 		//Helpers
 		public void Recalculate_WidthHeight()
 		{
-			m_Width = m_Vertices[0].GetDistanceTo(m_Vertices[1]);
-			m_Height = m_Vertices[0].GetDistanceTo(m_Vertices[2]);
+			m_Width = m_Vertices_Original[0].GetDistanceTo(m_Vertices_Original[1]);
+			m_Height = m_Vertices_Original[0].GetDistanceTo(m_Vertices_Original[2]);
 		}
 	}
 }

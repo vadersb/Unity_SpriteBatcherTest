@@ -16,8 +16,10 @@ namespace vadersb.utils.unity
 		private SpriteAtlas m_SpriteAtlas = null;
 
 		[SerializeField]
-		private Color m_Color;
+		private Color m_Color = Color.white;
 
+		[SerializeField]
+		private bool m_UseExtendedUVs = false;
 
 		//material property block
 		private MaterialPropertyBlock m_MaterialPropertyBlock;
@@ -34,7 +36,12 @@ namespace vadersb.utils.unity
 
 		private int m_Dynamic_IndexOffset;
 		private List<Vector3> m_Dynamic_Vertices;
-		private List<Vector2> m_Dynamic_UVs;
+
+		private List<Vector2> m_Dynamic_UV1;
+		private List<Vector2> m_Dynamic_UV2;
+		private List<Vector2> m_Dynamic_UV3;
+		private List<Vector2> m_Dynamic_UV4;
+
 		private List<Color> m_Dynamic_Colors;
 		private List<int> m_Dynamic_Triangles;
 
@@ -60,7 +67,10 @@ namespace vadersb.utils.unity
 			//creating dynamic buffers
 			m_Dynamic_IndexOffset = 0;
 			m_Dynamic_Vertices = new List<Vector3>(DefaultCapacity);
-			m_Dynamic_UVs = new List<Vector2>(DefaultCapacity);
+			m_Dynamic_UV1 = new List<Vector2>(DefaultCapacity);
+			m_Dynamic_UV2 = new List<Vector2>(DefaultCapacity);
+			m_Dynamic_UV3 = new List<Vector2>(DefaultCapacity);
+			m_Dynamic_UV4 = new List<Vector2>(DefaultCapacity);
 			m_Dynamic_Colors = new List<Color>(DefaultCapacity);
 			m_Dynamic_Triangles = new List<int>(DefaultCapacity);
 		}
@@ -98,16 +108,37 @@ namespace vadersb.utils.unity
 		//Finalizing the mesh
 		public void CompleteMesh()
 		{
+			if (m_Dynamic_Triangles.Count == 0)
+			{
+				if (m_Mesh.vertexCount > 0)
+				{
+					m_Mesh.Clear();
+				}
+
+				return;
+			}
+
 			m_Mesh.Clear();
 
 			m_Mesh.SetVertices(m_Dynamic_Vertices);
 			m_Mesh.SetColors(m_Dynamic_Colors);
-			m_Mesh.SetUVs(0, m_Dynamic_UVs);
+			m_Mesh.SetUVs(0, m_Dynamic_UV1);
+
+			if (m_UseExtendedUVs == true)
+			{
+				m_Mesh.SetUVs(1, m_Dynamic_UV2);
+				m_Mesh.SetUVs(2, m_Dynamic_UV3);
+				m_Mesh.SetUVs(3, m_Dynamic_UV4);
+			}
+
 			m_Mesh.SetTriangles(m_Dynamic_Triangles, 0, false);
 
 			m_Dynamic_Vertices.Clear();
 			m_Dynamic_Colors.Clear();
-			m_Dynamic_UVs.Clear();
+			m_Dynamic_UV1.Clear();
+			m_Dynamic_UV2.Clear();
+			m_Dynamic_UV3.Clear();
+			m_Dynamic_UV4.Clear();
 			m_Dynamic_Triangles.Clear();
 			m_Dynamic_IndexOffset = 0;
 		}
@@ -159,8 +190,29 @@ namespace vadersb.utils.unity
 			return -1;
 		}
 
+		public Sprite GetSprite(string spriteName)
+		{
+			spriteName += "(Clone)";
+
+			for (int i = 0; i < m_SpriteAtlas.spriteCount; i++)
+			{
+				if (m_Sprites[i].name == spriteName)
+				{
+					return m_Sprites[i];
+				}
+			}
+
+			#if DEBUG
+			Debug.LogError("Failed to find sprite: " + spriteName + " in atlas: " + m_SpriteAtlas.name);
+			#endif
+
+			return null;
+		}
+
 		//----------------------------------------------------------------------
 		//Drawing Sprites
+		private static readonly Vector2 s_DefaultExtraUV = new Vector2(0.0f,0.0f);
+
 		public void DrawSprite(int spriteIndex, Vector2 position, Color color)
 		{
 			//-----
@@ -193,12 +245,22 @@ namespace vadersb.utils.unity
 				//uv
 				var curUV = uvs[i];
 
-				m_Dynamic_UVs.Add(curUV);
+				m_Dynamic_UV1.Add(curUV);
 
 				//color
 				m_Dynamic_Colors.Add(color);
 			}
 
+			//extra UVs
+			if (m_UseExtendedUVs == true)
+			{
+				for (int i = 0; i < count; i++)
+				{
+					m_Dynamic_UV2.Add(s_DefaultExtraUV);
+					m_Dynamic_UV3.Add(s_DefaultExtraUV);
+					m_Dynamic_UV4.Add(s_DefaultExtraUV);
+				}
+			}
 
 			count = triangles.Length;
 
@@ -225,6 +287,7 @@ namespace vadersb.utils.unity
 				return;
 			}
 
+			//rotationAngle = -rotationAngle; //to Unity coordinate system
 
 			//-----
 			//Adding sprite geometry
@@ -248,10 +311,21 @@ namespace vadersb.utils.unity
 				//uv
 				var curUV = uvs[i];
 
-				m_Dynamic_UVs.Add(curUV);
+				m_Dynamic_UV1.Add(curUV);
 
 				//color
 				m_Dynamic_Colors.Add(color);
+			}
+
+			//extra UVs
+			if (m_UseExtendedUVs == true)
+			{
+				for (int i = 0; i < count; i++)
+				{
+					m_Dynamic_UV2.Add(s_DefaultExtraUV);
+					m_Dynamic_UV3.Add(s_DefaultExtraUV);
+					m_Dynamic_UV4.Add(s_DefaultExtraUV);
+				}
 			}
 
 
@@ -280,6 +354,7 @@ namespace vadersb.utils.unity
 				return;
 			}
 
+			//rotationAngle = -rotationAngle; //to Unity coordinate system
 
 			//-----
 			//Adding sprite geometry
@@ -305,12 +380,22 @@ namespace vadersb.utils.unity
 				//uv
 				var curUV = uvs[i];
 
-				m_Dynamic_UVs.Add(curUV);
+				m_Dynamic_UV1.Add(curUV);
 
 				//color
 				m_Dynamic_Colors.Add(color);
 			}
 
+			//extra UVs
+			if (m_UseExtendedUVs == true)
+			{
+				for (int i = 0; i < count; i++)
+				{
+					m_Dynamic_UV2.Add(s_DefaultExtraUV);
+					m_Dynamic_UV3.Add(s_DefaultExtraUV);
+					m_Dynamic_UV4.Add(s_DefaultExtraUV);
+				}
+			}
 
 			count = triangles.Length;
 
@@ -337,6 +422,7 @@ namespace vadersb.utils.unity
 				return;
 			}
 
+			//rotationAngle = -rotationAngle; //to Unity coordinate system
 
 			//-----
 			//Adding sprite geometry
@@ -362,12 +448,22 @@ namespace vadersb.utils.unity
 				//uv
 				var curUV = uvs[i];
 
-				m_Dynamic_UVs.Add(curUV);
+				m_Dynamic_UV1.Add(curUV);
 
 				//color
 				m_Dynamic_Colors.Add(color);
 			}
 
+			//extra UVs
+			if (m_UseExtendedUVs == true)
+			{
+				for (int i = 0; i < count; i++)
+				{
+					m_Dynamic_UV2.Add(s_DefaultExtraUV);
+					m_Dynamic_UV3.Add(s_DefaultExtraUV);
+					m_Dynamic_UV4.Add(s_DefaultExtraUV);
+				}
+			}
 
 			count = triangles.Length;
 
@@ -403,12 +499,22 @@ namespace vadersb.utils.unity
 				m_Dynamic_Vertices.Add(spriteQuad.m_Vertices[i]);
 
 				//uv
-				m_Dynamic_UVs.Add(spriteQuad.m_UVs[i]);
+				m_Dynamic_UV1.Add(spriteQuad.m_UV1[i]);
 
 				//color
 				m_Dynamic_Colors.Add(spriteQuad.m_Colors[i]);
 			}
 
+			//uv2
+			if (m_UseExtendedUVs == true)
+			{
+				for (int i = 0; i < SpriteQuad.VerticesCount; i++)
+				{
+					m_Dynamic_UV2.Add(spriteQuad.m_UV2[i]);
+					m_Dynamic_UV3.Add(spriteQuad.m_UV3[i]);
+					m_Dynamic_UV4.Add(spriteQuad.m_UV4[i]);
+				}
+			}
 
 			for (int i = 0; i < SpriteQuad.IndicesCount; i++)
 			{
@@ -419,7 +525,7 @@ namespace vadersb.utils.unity
 			m_Dynamic_IndexOffset += SpriteQuad.VerticesCount;
 		}
 
-		public void DrawMesh(Vector2[] vertices, Vector2[] uvs, Color[] colors, int[] triangles)
+		public void DrawMesh(Vector2[] vertices, Vector2[] uv1, Color[] colors, int[] triangles, Vector2[] uv2 = null, Vector2[] uv3 = null, Vector2[] uv4 = null)
 		{
 			var verticesCount = vertices.Length;
 
@@ -428,7 +534,7 @@ namespace vadersb.utils.unity
 				return;
 			}
 
-			Debug.Assert(uvs.Length == verticesCount);
+			Debug.Assert(uv1.Length == verticesCount);
 			Debug.Assert(colors.Length == verticesCount);
 
 			var indicesCount = triangles.Length;
@@ -447,12 +553,32 @@ namespace vadersb.utils.unity
 				m_Dynamic_Vertices.Add(vertices[i]);
 
 				//uv
-				m_Dynamic_UVs.Add(uvs[i]);
+				m_Dynamic_UV1.Add(uv1[i]);
 
 				//color
 				m_Dynamic_Colors.Add(colors[i]);
 			}
-			
+
+			//extended uvs
+			if (m_UseExtendedUVs == true)
+			{
+				Debug.Assert(uv2 != null);
+				Debug.Assert(uv2.Length == verticesCount);
+
+				Debug.Assert(uv3 != null);
+				Debug.Assert(uv3.Length == verticesCount);
+
+				Debug.Assert(uv4 != null);
+				Debug.Assert(uv4.Length == verticesCount);
+
+				for (int i = 0; i < verticesCount; i++)
+				{
+					m_Dynamic_UV2.Add(uv2[i]);
+					m_Dynamic_UV3.Add(uv3[i]);
+					m_Dynamic_UV4.Add(uv4[i]);
+				}
+			}
+
 			for (int i = 0; i < indicesCount; i++)
 			{
 				//index
@@ -462,7 +588,7 @@ namespace vadersb.utils.unity
 			m_Dynamic_IndexOffset += verticesCount;
 		}
 
-		public void DrawMesh(Vector2[] vertices, Vector2[] uvs, Color color, int[] triangles)
+		public void DrawMesh(Vector2[] vertices, Vector2[] uv1, Color color, int[] triangles, Vector2[] uv2 = null, Vector2[] uv3 = null, Vector2[] uv4 = null)
 		{
 			var verticesCount = vertices.Length;
 
@@ -471,7 +597,7 @@ namespace vadersb.utils.unity
 				return;
 			}
 
-			Debug.Assert(uvs.Length == verticesCount);
+			Debug.Assert(uv1.Length == verticesCount);
 
 			var indicesCount = triangles.Length;
 
@@ -489,12 +615,32 @@ namespace vadersb.utils.unity
 				m_Dynamic_Vertices.Add(vertices[i]);
 
 				//uv
-				m_Dynamic_UVs.Add(uvs[i]);
+				m_Dynamic_UV1.Add(uv1[i]);
 
 				//color
 				m_Dynamic_Colors.Add(color);
 			}
-			
+
+			//extended uvs
+			if (m_UseExtendedUVs == true)
+			{
+				Debug.Assert(uv2 != null);
+				Debug.Assert(uv2.Length == verticesCount);
+
+				Debug.Assert(uv3 != null);
+				Debug.Assert(uv3.Length == verticesCount);
+
+				Debug.Assert(uv4 != null);
+				Debug.Assert(uv4.Length == verticesCount);
+
+				for (int i = 0; i < verticesCount; i++)
+				{
+					m_Dynamic_UV2.Add(uv2[i]);
+					m_Dynamic_UV3.Add(uv3[i]);
+					m_Dynamic_UV4.Add(uv4[i]);
+				}
+			}
+
 			for (int i = 0; i < indicesCount; i++)
 			{
 				//index
@@ -504,7 +650,7 @@ namespace vadersb.utils.unity
 			m_Dynamic_IndexOffset += verticesCount;
 		}
 
-		public void DrawMesh(List<Vector2> vertices, List<Vector2> uvs, List<Color> colors, List<int> triangles)
+		public void DrawMesh(List<Vector2> vertices, List<Vector2> uv1, List<Color> colors, List<int> triangles, List<Vector2> uv2 = null, List<Vector2> uv3 = null, List<Vector2> uv4 = null)
 		{
 			if (vertices == null) return;
 
@@ -515,7 +661,7 @@ namespace vadersb.utils.unity
 				return;
 			}
 
-			Debug.Assert(uvs.Count == verticesCount);
+			Debug.Assert(uv1.Count == verticesCount);
 			Debug.Assert(colors.Count == verticesCount);
 
 			var indicesCount = triangles.Count;
@@ -534,12 +680,32 @@ namespace vadersb.utils.unity
 				m_Dynamic_Vertices.Add(vertices[i]);
 
 				//uv
-				m_Dynamic_UVs.Add(uvs[i]);
+				m_Dynamic_UV1.Add(uv1[i]);
 
 				//color
 				m_Dynamic_Colors.Add(colors[i]);
 			}
-			
+
+			//extended uvs
+			if (m_UseExtendedUVs == true)
+			{
+				Debug.Assert(uv2 != null);
+				Debug.Assert(uv2.Count == verticesCount);
+
+				Debug.Assert(uv3 != null);
+				Debug.Assert(uv3.Count == verticesCount);
+
+				Debug.Assert(uv4 != null);
+				Debug.Assert(uv4.Count == verticesCount);
+
+				for (int i = 0; i < verticesCount; i++)
+				{
+					m_Dynamic_UV2.Add(uv2[i]);
+					m_Dynamic_UV3.Add(uv3[i]);
+					m_Dynamic_UV4.Add(uv4[i]);
+				}
+			}
+
 			for (int i = 0; i < indicesCount; i++)
 			{
 				//index
@@ -549,7 +715,7 @@ namespace vadersb.utils.unity
 			m_Dynamic_IndexOffset += verticesCount;
 		}
 
-		public void DrawMesh(List<Vector2> vertices, List<Vector2> uvs, Color color, List<int> triangles)
+		public void DrawMesh(List<Vector2> vertices, List<Vector2> uv1, Color color, List<int> triangles, List<Vector2> uv2 = null, List<Vector2> uv3 = null, List<Vector2> uv4 = null)
 		{
 			if (vertices == null) return;
 
@@ -560,7 +726,7 @@ namespace vadersb.utils.unity
 				return;
 			}
 
-			Debug.Assert(uvs.Count == verticesCount);
+			Debug.Assert(uv1.Count == verticesCount);
 
 			var indicesCount = triangles.Count;
 
@@ -578,12 +744,32 @@ namespace vadersb.utils.unity
 				m_Dynamic_Vertices.Add(vertices[i]);
 
 				//uv
-				m_Dynamic_UVs.Add(uvs[i]);
+				m_Dynamic_UV1.Add(uv1[i]);
 
 				//color
 				m_Dynamic_Colors.Add(color);
 			}
-			
+
+			//extended uvs
+			if (m_UseExtendedUVs == true)
+			{
+				Debug.Assert(uv2 != null);
+				Debug.Assert(uv2.Count == verticesCount);
+
+				Debug.Assert(uv3 != null);
+				Debug.Assert(uv3.Count == verticesCount);
+
+				Debug.Assert(uv4 != null);
+				Debug.Assert(uv4.Count == verticesCount);
+
+				for (int i = 0; i < verticesCount; i++)
+				{
+					m_Dynamic_UV2.Add(uv2[i]);
+					m_Dynamic_UV3.Add(uv3[i]);
+					m_Dynamic_UV4.Add(uv4[i]);
+				}
+			}
+
 			for (int i = 0; i < indicesCount; i++)
 			{
 				//index
@@ -646,6 +832,9 @@ namespace vadersb.utils.unity
 			m_MaterialPropertyBlock.SetTexture(TextureProperty, texture);
 			// ReSharper disable once Unity.PreferAddressByIdToGraphicsParams
 			m_MaterialPropertyBlock.SetColor(ColorProperty, m_Color);
+
+			//test flip
+			//m_MaterialPropertyBlock.SetVector("_Flip", new Vector4(1.0f, 1.0f, 0.0f, 0.0f));
 		}
 
 

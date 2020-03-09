@@ -241,6 +241,13 @@ namespace vadersb.utils
 			return (curValue - rangeFrom) / (rangeTo - rangeFrom);
 		}
 
+
+		public static float Factor_FromRange_Clamped(float rangeFrom, float rangeTo, float curValue)
+		{
+			return MathHelpers.Clamp_Factor(Factor_FromRange(rangeFrom, rangeTo, curValue));
+		}
+		
+
 		/// <summary>
 		///   <para>Returns a sub-factor of a value inside specified sub-factor range.</para>
 		/// </summary>
@@ -414,8 +421,102 @@ namespace vadersb.utils
 
 			return result;
 		}
-		
-		
+
+
+		public static float Sequence_Interpolated_Looped(float curFactor, int stepsCount, out int stepFrom, out int stepTo)
+		{
+			#if DEBUG
+			if (curFactor < 0.0f || curFactor >= 1.0f)
+			{
+				Debug.LogError("invalid curFactor: " + curFactor + ". factor should be clamped as looped! [0.0f; 1.0f)");
+			}
+			#endif
+
+			if (stepsCount < 2)
+			{
+				stepFrom = 0;
+				stepTo = 0;
+				return 0.0f;
+			}
+
+			float localFactorLength = 1.0f / stepsCount;
+
+			stepFrom = 0;
+
+			while (curFactor > localFactorLength)
+			{
+				curFactor -= localFactorLength;
+				stepFrom++;
+			}
+
+			if (stepFrom == stepsCount)
+			{
+				stepFrom = 0;
+				stepTo = 1;
+				return 0.0f;
+			}
+
+			//step to
+			stepTo = stepFrom + 1;
+
+			if (stepTo == stepsCount)
+			{
+				stepTo = 0;
+			}
+
+			//returning local factor
+			return curFactor / localFactorLength;
+		}
+
+
+		public static float Sequence_Interpolated(float curFactor, int stepsCount, out int stepFrom, out int stepTo)
+		{
+			if (stepsCount < 2)
+			{
+				stepFrom = 0;
+				stepTo = 0;
+				return 0.0f;
+			}
+
+			//start
+			if (curFactor <= 0.0f)
+			{
+				stepFrom = 0;
+				stepTo = 1;
+				return 0.0f;
+			}
+
+			//end
+			if (curFactor >= 1.0f)
+			{
+				stepFrom = stepsCount - 2;
+				stepTo = stepsCount - 1;
+				return 1.0f;
+			}
+
+			//middle
+			float localFactorLength = 1.0f / (stepsCount - 1);
+
+			stepFrom = 0;
+
+			while (curFactor > localFactorLength)
+			{
+				curFactor -= localFactorLength;
+				stepFrom++;
+			}
+
+			//step to
+			stepTo = stepFrom + 1;
+
+			if (stepTo == stepsCount)
+			{
+				stepTo = stepFrom;
+			}
+
+			//returning local factor
+			return curFactor / localFactorLength;
+		}
+
 		//====
 		//swap
 		//====
