@@ -106,5 +106,12 @@ namespace vadersb.utils
 				CubicSmooth(prevPoint.y, startPoint.y, endPoint.y, nextPoint.y, factor),
 				CubicSmooth(prevPoint.z, startPoint.z, endPoint.z, nextPoint.z, factor));
 		}
+		
+		
+		//some special cases
+		public static float EaseIn(float value)
+		{
+			return Quadratic(0.0f, 0.0f, 1.0f, value);
+		}
 	}
 }
